@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Basic Chat</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+      crossorigin="anonymous"
+    />
+    <script src="/socket.io/socket.io.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+      integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      const socket = io();
+      socket.on("welcome", (userId) => {
+        $(".alertText").html(`Hoşgeldin ${userId}! Mesaj Gönderebilirsin!`);
+        $(".alertWelcome").alert();
+        setTimeout(() => {
+          $(".alertWelcome").alert("close");
+        }, 3000);
+      });
+
+      socket.on("message", (message) => {
+        console.log("Message:", message);
+        setMessageArea(message)
+      });
+      
+      const setMessageArea=(message)=>{
+        let messageTemplate = `      
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+         <strong >${message.userId}</strong><br>
+         ${message.message}
+        </div>`;
+        $("#messageArea").append(messageTemplate);
+      }
+
+      $(() => {
+        socket.on("messageAll",(message)=>{
+            if(message){
+                message.map(item=>{
+                    setMessageArea(item);
+                })
+            }
+        });
+        $("#sendMessage").on("click", () => {
+          let message = $("#messageText").val();
+          socket.emit("message", message);
+        });
+      });
+    </script>
+  </head>
+  <body class="bg-light">
+    <div class="container mt-5">
+      <div class="alert alertWelcome alert-warning alert-dismissible fade show" role="alert">
+        <strong class="alertText">Holy guacamole!</strong>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Mesaj Giriniz</h5>
+          <input type="text" class="form-control" name="" id="messageText" />
+          <button type="button" id="sendMessage" class="btn btn-light mt-2">
+            Gönder
+          </button>
+        </div>
+      </div>
+      <br />
+      <div id="messageArea"></div>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
